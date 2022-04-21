@@ -1,0 +1,7 @@
+index.html
+script.js
+node_modules/
+assets/
+css/
+.vscode/
+.DS_Store
