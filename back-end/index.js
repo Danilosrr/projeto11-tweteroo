@@ -15,31 +15,52 @@ let tweets = [];
 app.post('/sign-up', (req, res) => {
   const received = req.body;
 
-  user.username = received.username,
-  user.avatar = received.avatar
+  user.username = received.username;
+  user.avatar = received.avatar;
 
-  res.status(201).send('Ok');
+  if (user.username==='' || user.avatar===''){
+    res.sendStatus(400).send('Todos os campos são obrigatórios!')
+  }else{
+    res.status(201).send('Ok');  
+  }
 });
 
 app.post('/tweets', (req, res) => {
-  const received = req.body;
-  let tweet = {
-    username: received.username,
+  let newTweet = {
+    username: req.headers.user,
     avatar: user.avatar,
-    tweet:  received.tweet
+    tweet: req.body.tweet
   };
-  tweets.push(tweet);
-  console.log(tweets);
-  res.status(201).send('Ok');
+
+  if(newTweet.username != '' && newTweet.tweet != ''){
+    tweets.unshift(newTweet);
+    res.status(201).send('Ok');  
+  }else{
+    res.sendStatus(400).send('Todos os campos são obrigatórios!');
+  }
 });
 
 app.get('/tweets',(req, res) => {
-  if (tweets.length>=10){
-    tweets=tweets.slice(Math.max(tweets.length-10,0));
-    res.status(200).send(tweets);
+  let page = req.query.page;
+  let initial = (page-1)*10;
+  let final = (page*10);
+  let pageTweets = tweets.slice(initial,final);
+
+  if(isNaN(page) || page<1){
+    res.sendStatus(400).send('Informe uma página válida!')
   }else{
-    res.status(200).send(tweets);  
-  }
+    res.status(200).send(pageTweets);  
+  };
+});
+
+app.get('/tweets/:username', (req, res) => {
+  const user = req.params.username;
+
+  let userTweets = tweets.filter(tweet => {
+    return tweet.username === user;
+  });
+  
+  res.status(200).send(userTweets);
 });
 
 app.listen(5000);
